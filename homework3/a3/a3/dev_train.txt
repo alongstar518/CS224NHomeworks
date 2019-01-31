@@ -1,0 +1,99 @@
+/home/zheng/anaconda3/bin/python /home/zheng/Documents/Learning/CS224N/week3/homework/a3/a3/run.py
+================================================================================
+INITIALIZING
+================================================================================
+Loading data...
+took 2.04 seconds
+Building parser...
+took 0.03 seconds
+Loading pretrained embeddings...
+took 2.22 seconds
+Vectorizing data...
+took 0.08 seconds
+Preprocessing training data...
+took 1.44 seconds
+took 0.02 seconds
+
+================================================================================
+TRAINING
+================================================================================
+Epoch 1 out of 10
+100%|██████████| 48/48 [00:06<00:00,  7.71it/s]
+Average Train Loss: 0.6231753261138996
+Evaluating on dev set
+  0%|          | 0/500 [00:00<?, ?it/s]- dev UAS: 54.68
+New best dev UAS! Saving model.
+125250it [00:00, 11235944.31it/s]      
+  0%|          | 0/48 [00:00<?, ?it/s]
+Epoch 2 out of 10
+ 98%|█████████▊| 47/48 [00:08<00:00,  4.74it/s]Average Train Loss: 0.34988574373225373
+Evaluating on dev set
+100%|██████████| 48/48 [00:08<00:00,  5.77it/s]
+  0%|          | 0/500 [00:00<?, ?it/s]- dev UAS: 60.92
+New best dev UAS! Saving model.
+125250it [00:00, 10386045.67it/s]      
+  0%|          | 0/48 [00:00<?, ?it/s]
+Epoch 3 out of 10
+ 98%|█████████▊| 47/48 [00:07<00:00,  4.88it/s]Average Train Loss: 0.28423332174619037
+Evaluating on dev set
+100%|██████████| 48/48 [00:07<00:00,  6.43it/s]
+125250it [00:00, 11554492.94it/s]      
+- dev UAS: 65.08
+New best dev UAS! Saving model.
+
+Epoch 4 out of 10
+100%|██████████| 48/48 [00:06<00:00,  7.97it/s]
+Average Train Loss: 0.24570385459810495
+Evaluating on dev set
+  0%|          | 0/500 [00:00<?, ?it/s]- dev UAS: 65.82
+New best dev UAS! Saving model.
+125250it [00:00, 8448098.80it/s]       
+
+Epoch 5 out of 10
+ 98%|█████████▊| 47/48 [00:09<00:00,  4.98it/s]Average Train Loss: 0.22053738962858915
+Evaluating on dev set
+100%|██████████| 48/48 [00:09<00:00,  4.99it/s]
+125250it [00:00, 11628922.55it/s]      
+  0%|          | 0/48 [00:00<?, ?it/s]- dev UAS: 68.98
+New best dev UAS! Saving model.
+
+Epoch 6 out of 10
+ 98%|█████████▊| 47/48 [00:09<00:00,  4.91it/s]Average Train Loss: 0.19839525315910578
+Evaluating on dev set
+100%|██████████| 48/48 [00:09<00:00,  4.98it/s]
+  0%|          | 0/500 [00:00<?, ?it/s]- dev UAS: 69.95
+New best dev UAS! Saving model.
+
+Epoch 7 out of 10
+125250it [00:00, 11158143.96it/s]      
+ 98%|█████████▊| 47/48 [00:10<00:00,  4.97it/s]Average Train Loss: 0.1818087799474597
+Evaluating on dev set
+100%|██████████| 48/48 [00:10<00:00,  4.63it/s]
+125250it [00:00, 11254238.01it/s]      
+  0%|          | 0/48 [00:00<?, ?it/s]- dev UAS: 70.67
+New best dev UAS! Saving model.
+
+Epoch 8 out of 10
+ 98%|█████████▊| 47/48 [00:07<00:00,  7.60it/s]Average Train Loss: 0.16533251417179903
+Evaluating on dev set
+100%|██████████| 48/48 [00:07<00:00,  6.54it/s]
+  0%|          | 0/500 [00:00<?, ?it/s]- dev UAS: 72.05
+New best dev UAS! Saving model.
+125250it [00:00, 10978361.95it/s]      
+  0%|          | 0/48 [00:00<?, ?it/s]
+Epoch 9 out of 10
+ 98%|█████████▊| 47/48 [00:06<00:00,  7.47it/s]Average Train Loss: 0.15464628549913564
+Evaluating on dev set
+100%|██████████| 48/48 [00:06<00:00,  7.47it/s]
+  0%|          | 0/500 [00:00<?, ?it/s]- dev UAS: 72.81
+New best dev UAS! Saving model.
+125250it [00:00, 11525594.03it/s]      
+  0%|          | 0/48 [00:00<?, ?it/s]
+Epoch 10 out of 10
+ 98%|█████████▊| 47/48 [00:06<00:00,  6.01it/s]Average Train Loss: 0.13852490407104293
+Evaluating on dev set
+100%|██████████| 48/48 [00:06<00:00,  6.96it/s]
+125250it [00:00, 8907784.25it/s]       
+- dev UAS: 72.99
+New best dev UAS! Saving model.
+
