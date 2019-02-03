@@ -79,7 +79,7 @@ class NMT(nn.Module):
         self.att_projection = nn.Linear(in_features= 2 *self.hidden_size, out_features= self.hidden_size, bias=False)
         self.combined_output_projection = nn.Linear(in_features=3 * self.hidden_size, out_features=self.hidden_size, bias= False)
         self.target_vocab_projection = nn.Linear(in_features= self.hidden_size, out_features= len(vocab.tgt))
-        self.dropout = nn.Dropout(p=self.dropout_rate)
+        self.dropout = nn.Dropout(self.dropout_rate)
         ### END YOUR CODE
 
 
@@ -345,7 +345,7 @@ class NMT(nn.Module):
         ###         https://pytorch.org/docs/stable/torch.html#torch.cat
         ###     Tanh:
         ###         https://pytorch.org/docs/stable/torch.html#torch.tanh
-        alpha_t = nn.functional.softmax(e_t)
+        alpha_t = nn.functional.softmax(e_t, dim=-1)
         a_view = (alpha_t.size(0), 1, alpha_t.size(1))
         a_t = torch.bmm(alpha_t.view(*a_view), enc_hiddens)
         a_t = torch.squeeze(a_t,1)
