@@ -127,7 +127,10 @@ class VocabEntry(object):
         ###
         ###     You must prepend each word with the `start_of_word` character and append 
         ###     with the `end_of_word` character. 
-
+        if type(sents[0]) == list:
+            return [[([self.char2id['{']] + [self.char2id[c] for c in w] + [self.char2id['}']]) for w in s] for s in sents]
+        else:
+            return [([self.char2id['{']] + [self.char2id[c] for c in w] + [self.char2id['}']]) for w in sents]
 
         ### END YOUR CODE
 
