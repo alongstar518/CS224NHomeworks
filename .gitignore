@@ -1,0 +1,6 @@
+*.json
+*.xml
+__pycache__
+*.bin
+*.optim
+.idea
