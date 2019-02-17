@@ -14,25 +14,26 @@ class Highway(nn.Module):
     Highway module to generate word embedding
     """
 
-    def __init__(self, embedding_size, src_len):
+    def __init__(self, word_embedding_size, max_sentense_length):
         """
-
-        :param embedding_size: int
+        
+        :param word_embedding_size: 
+        :param max_sentense_length: 
         """
         super(Highway, self).__init__()
-        self.embedding_size = embedding_size
-        self.src_len = src_len
+        self.word_embedding_size = word_embedding_size
+        self.max_sentense_length = max_sentense_length
 
         #Define Layers
-        self.proj_layer = nn.Linear(in_features=self.embedding_size, out_features=self.embedding_size, bias=True)
-        self.gate_layer = nn.Linear(in_features=self.embedding_size, out_features=self.embedding_size, bias=True)
+        self.proj_layer = nn.Linear(in_features=self.word_embedding_size, out_features=self.word_embedding_size, bias=True)
+        self.gate_layer = nn.Linear(in_features=self.word_embedding_size, out_features=self.word_embedding_size, bias=True)
 
 
     def projection(self, input):
         """
 
-        :param input: shape of (batch, src_length,embedding size)
-        :return: projection , shape of (batch, src_length,embedding size)
+        :param input: shape of (batch, max_sentence_length,embedding size)
+        :return: projection , shape of (batch, max_sentence_length,embedding_size)
         """
         proj_val = self.proj_layer(input)
         x_proj = F.relu(proj_val)
@@ -42,8 +43,8 @@ class Highway(nn.Module):
     def gate(self, input):
         """
 
-        :param input:shape of (batch, src_length,embedding size)
-        :return: shape of (batch, src_length,embedding size)
+        :param input:shape of (batch, max_sentence_length,embedding size)
+        :return: shape of (batch, max_sentence_length,embedding size)
         """
         gate_val = self.gate_layer(input)
         x_gate = F.sigmoid(gate_val)
@@ -53,10 +54,10 @@ class Highway(nn.Module):
     def highway(self, input, projection, gate):
         """
 
-        :param input: shape of (batch, src_length,embedding size)
-        :param projection: shape of (batch, src_length,embedding size)
-        :param gate: shape of (batch, src_length,embedding size)
-        :return: shape of (batch, src_length,embedding size)
+        :param input: shape of (batch, max_sentence_length,embedding size)
+        :param projection: shape of (batch, max_sentence_length,embedding size)
+        :param gate: shape of (batch, max_sentence_length,embedding size)
+        :return: shape of (batch, max_sentence_length,embedding size)
         """
         gate_proj = gate * projection
         print("gate_proj is %s, shape = %s" % (gate_proj, gate_proj.size()))
@@ -72,8 +73,8 @@ class Highway(nn.Module):
     def forward(self, input):
         """
 
-        :param input: shape of (batch, src_length,embedding size)
-        :return: shape of (batch, src_length,embedding size)
+        :param input: shape of (batch, max_sentence_length,embedding size)
+        :return: shape of (batch, max_sentence_length,embedding size)
         """
         proj = self.projection(input)
         gate = self.gate(input)
