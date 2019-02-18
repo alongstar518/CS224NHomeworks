@@ -30,32 +30,12 @@ class CNN(nn.Module):
     def forward(self, input):
         """
 
-        :param input: (max_sentense_lenth, batch_size, max_word_length, char_embedding_size)
-        :return: word embedding vectors for sentense. (batch_size, word_embedding_size, max_word_length)
+        :param input: (max_sentense_lenth, max_word_length, char_embedding_size)
+        :return: word embedding vectors for sentense. (max_sentense_length, word_embedding_size, max_word_length)
         """
-        '''
-        _input = input
-        input = _input.transpose(2,3).transpose(0,1)
-        out = []
-        for i in range(input.size(0)):
-            conv = self.conv1d(input[i])
-            relu = F.relu(conv)
-            out_sent = self.maxpool(relu)
-            out.append(out_sent)
-
-        forward_out = torch.stack(out)
-        
-        #print("OUT is %s" % forward_out)
-        return forward_out.transpose(0,1)
-        '''
-        input = input.transpose(2, 3)
-        batch_size = input.size(1)
-        input = input.view(-1, input.size(2), input.size(3))
         conv = self.cov1d_layer(input)
         relu = F.relu(conv)
         out = torch.max(relu, dim=2)[0]
-        out = out.view(-1, batch_size, out.size(1))
-        #print("OUT is %s", out)
         return out
 
 ### END YOUR CODE
