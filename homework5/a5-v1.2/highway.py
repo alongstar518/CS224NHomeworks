@@ -30,8 +30,8 @@ class Highway(nn.Module):
     def forward(self, input):
         """
 
-        :param input: shape of (batch, max_sentence_length,embedding size)
-        :return: shape of (batch, max_sentence_length,embedding size)
+        :param input: shape of (max_sentence_length,embedding size)
+        :return: shape of (max_sentence_length,embedding size)
         """
         proj_val = self.proj_layer(input)
         proj = F.relu(proj_val)
