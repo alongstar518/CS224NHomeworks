@@ -26,28 +26,6 @@ class CNN(nn.Module):
         self.cov1d_layer = nn.Conv1d(in_channels=self.char_embedding_size, out_channels=self.word_embedding_size, kernel_size=self.kernel_size, bias=True)
         self.maxpool_layer = nn.MaxPool1d(kernel_size)
 
-    def conv1d(self, input):
-        """
-
-        :param input:  size (batch_size, char_embedding_size, max_word_length)
-        :return: size: (batch_size, word_embedding_size, max_word_lenth-kernel_size+1)
-        """
-
-        conv = self.cov1d_layer(input)
-        #print("conv1d result: %s, shape=%s" % (conv, conv.size()))
-
-        return conv
-
-    def maxpool(self, input):
-        """
-
-        :param input:  size (batch_size, word_embedding_size, max_word_lenth-kernel_size+1)
-        :return: word_embedding vector
-        """
-
-        max_pool = torch.max(input, dim=2)
-
-        return max_pool[0]
 
     def forward(self, input):
         """
@@ -67,15 +45,15 @@ class CNN(nn.Module):
 
         forward_out = torch.stack(out)
         
-        print("OUT is %s" % forward_out.transpose(0,1))
-        return forward_out
+        #print("OUT is %s" % forward_out)
+        return forward_out.transpose(0,1)
         '''
         input = input.transpose(2, 3)
         batch_size = input.size(1)
         input = input.view(-1, input.size(2), input.size(3))
-        conv = self.conv1d(input)
+        conv = self.cov1d_layer(input)
         relu = F.relu(conv)
-        out = self.maxpool(relu)
+        out = torch.max(relu, dim=2)[0]
         out = out.view(-1, batch_size, out.size(1))
         #print("OUT is %s", out)
         return out
