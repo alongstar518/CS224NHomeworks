@@ -39,7 +39,7 @@ class Highway(nn.Module):
         gate_val = self.gate_layer(input)
         gate = F.sigmoid(gate_val)
 
-        high_way = torch.mul(gate, proj) + torch.mul((1-gate), input)
+        high_way = gate * proj + (1-gate) * input
 
         return high_way
 

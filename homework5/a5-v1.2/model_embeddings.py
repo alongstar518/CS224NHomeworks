@@ -65,8 +65,7 @@ class ModelEmbeddings(nn.Module):
         ### YOUR CODE HERE for part 1j
         device = input.device
         char_embeddings = self.charembedding_layer(input) # (max_sentense_lenth, batch_size, max_word_length, char_embedding_size)
-        char_embeddings = char_embeddings.transpose(0,1)
-        char_embeddings = char_embeddings.transpose(2,3)
+        char_embeddings = char_embeddings.permute(1,0,3,2)
         word_embedding = []
         for emb in char_embeddings:
             cnn = CNN(self.char_embedding_size, self.embed_size)
@@ -78,7 +77,7 @@ class ModelEmbeddings(nn.Module):
             embedding = self.dropout_layer(highway_out)
             word_embedding.append(embedding)
         word_embedding = torch.stack(word_embedding)
-        return word_embedding.transpose(0,1)
+        return word_embedding.permute(1,0,2)
 
         ### END YOUR CODE
 
