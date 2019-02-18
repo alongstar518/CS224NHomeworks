@@ -98,21 +98,22 @@ def question_1f_sanity_check():
 
 
 def question_1j_sanity_check(model):
-	""" Sanity check for model_embeddings.py 
+    """ Sanity check for model_embeddings.py
 		basic shape check
 	"""
-	print ("-"*80)
-	print("Running Sanity Check for Question 1j: Model Embedding")
-	print ("-"*80)
-	sentence_length = 10
-	max_word_length = 21
-	inpt = torch.zeros(sentence_length, BATCH_SIZE, max_word_length, dtype=torch.long)
-	ME_source = model.model_embeddings_source
-	output = ME_source.forward(inpt)
-	output_expected_size = [sentence_length, BATCH_SIZE, EMBED_SIZE]
-	assert(list(output.size()) == output_expected_size), "output shape is incorrect: it should be:\n {} but is:\n{}".format(output_expected_size, list(output.size()))
-	print("Sanity Check Passed for Question 1j: Model Embedding!")
-	print("-"*80)
+    print ("-"*80)
+    print("Running Sanity Check for Question 1j: Model Embedding")
+    print ("-"*80)
+    sentence_length = 10
+    max_word_length = 21
+    inpt = torch.zeros(sentence_length, BATCH_SIZE, max_word_length, dtype=torch.long)
+    #inpt = torch.randint(size=(10, 2, 21), dtype=torch.long, high=50)
+    ME_source = model.model_embeddings_source
+    output = ME_source.forward(inpt)
+    output_expected_size = [sentence_length, BATCH_SIZE, EMBED_SIZE]
+    assert(list(output.size()) == output_expected_size), "output shape is incorrect: it should be:\n {} but is:\n{}".format(output_expected_size, list(output.size()))
+    print("Sanity Check Passed for Question 1j: Model Embedding!")
+    print("-"*80)
 
 def question_2a_sanity_check(decoder, char_vocab):
     """ Sanity check for CharDecoder.__init__()
