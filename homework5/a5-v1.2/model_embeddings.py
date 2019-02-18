@@ -40,7 +40,7 @@ class ModelEmbeddings(nn.Module):
         ## End A4 code
 
         ### YOUR CODE HERE for part 1j
-        self.word_embedding_size = embed_size
+        self.embed_size = embed_size
         self.dropout_rate = 0.3
         self.char_embedding_size = 50
         pad_token_idx = vocab.char2id['<pad>']
@@ -64,10 +64,13 @@ class ModelEmbeddings(nn.Module):
 
         ### YOUR CODE HERE for part 1j
         max_sentense_lenth = input.size()[0]
+        device = input.device
         char_embeddings = self.charembedding_layer(input) # (max_sentense_lenth, batch_size, max_word_length, char_embedding_size
-        cnn = CNN(self.char_embedding_size, self.word_embedding_size)
+        cnn = CNN(self.char_embedding_size, self.embed_size)
+        cnn.to(device)
         conv_out_for_high_way = cnn(char_embeddings)
-        highway = Highway(self.word_embedding_size,max_sentense_lenth)
+        highway = Highway(self.embed_size, max_sentense_lenth)
+        highway.to(device)
         highway_out = highway(conv_out_for_high_way)
         word_embedding = self.dropout_layer(highway_out)
         return word_embedding

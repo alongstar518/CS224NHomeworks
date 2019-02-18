@@ -37,7 +37,7 @@ class Highway(nn.Module):
         """
         proj_val = self.proj_layer(input)
         x_proj = F.relu(proj_val)
-        print("Projection is %s, shape= %s" % (x_proj, x_proj.size()))
+        #print("Projection is %s, shape= %s" % (x_proj, x_proj.size()))
         return x_proj
 
     def gate(self, input):
@@ -48,7 +48,7 @@ class Highway(nn.Module):
         """
         gate_val = self.gate_layer(input)
         x_gate = F.sigmoid(gate_val)
-        print("Gate is %s, shape=%s" % (x_gate,x_gate.size()))
+        #print("Gate is %s, shape=%s" % (x_gate,x_gate.size()))
         return x_gate
 
     def highway(self, input, projection, gate):
@@ -59,14 +59,14 @@ class Highway(nn.Module):
         :param gate: shape of (batch, max_sentence_length,embedding size)
         :return: shape of (batch, max_sentence_length,embedding size)
         """
-        gate_proj = gate * projection
-        print("gate_proj is %s, shape = %s" % (gate_proj, gate_proj.size()))
-        gate_input = (1-gate) * input
-        print("gate_proj is %s , \n shape = %s" % (gate_input, gate_input.size()))
+        gate_proj = torch.mul(gate , projection)
+        #print("gate_proj is %s, shape = %s" % (gate_proj, gate_proj.size()))
+        gate_input = torch.mul((1-gate) , input)
+        #print("gate_proj is %s , \n shape = %s" % (gate_input, gate_input.size()))
 
         high_way = gate_proj + gate_input
 
-        print("gate_proj is %s, shape= %s" % (high_way,high_way.size()))
+        #print("gate_proj is %s, shape= %s" % (high_way,high_way.size()))
 
         return high_way
 

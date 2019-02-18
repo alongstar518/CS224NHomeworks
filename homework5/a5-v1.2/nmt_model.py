@@ -114,7 +114,6 @@ class NMT(nn.Module):
         scores = target_gold_words_log_prob.sum() # mhahn2 Small modification from A4 code.
 
 
-
         if self.charDecoder is not None:
             max_word_len = target_padded_chars.shape[-1]
 
@@ -143,7 +142,6 @@ class NMT(nn.Module):
                                                 hidden state and cell.
         """
         enc_hiddens, dec_init_state = None, None
-
         X = self.model_embeddings_source(source_padded)
         X_packed = pack_padded_sequence(X, source_lengths)
         enc_hiddens, (last_hidden, last_cell) = self.encoder(X_packed)
