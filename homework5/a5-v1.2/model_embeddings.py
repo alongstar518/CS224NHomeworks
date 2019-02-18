@@ -11,7 +11,7 @@ Michael Hahn <mhahn2@stanford.edu>
 """
 
 import torch.nn as nn
-import torch
+
 # Do not change these imports; your module names should be
 #   `CNN` in the file `cnn.py`
 #   `Highway` in the file `highway.py`
@@ -64,21 +64,15 @@ class ModelEmbeddings(nn.Module):
 
         ### YOUR CODE HERE for part 1j
         device = input.device
-        char_embeddings = self.charembedding_layer(input) # (max_sentense_lenth, batch_size, max_word_length, char_embedding_size)
-        char_embeddings = char_embeddings.transpose(0,1)
-        char_embeddings = char_embeddings.transpose(2,3)
-        word_embedding = []
-        for emb in char_embeddings:
-            cnn = CNN(self.char_embedding_size, self.embed_size)
-            cnn.to(device)
-            conv_out_for_high_way = cnn(emb)
-            highway = Highway(self.embed_size)
-            highway.to(device)
-            highway_out = highway(conv_out_for_high_way)
-            embedding = self.dropout_layer(highway_out)
-            word_embedding.append(embedding)
-        word_embedding = torch.stack(word_embedding)
-        return word_embedding.transpose(0,1)
+        char_embeddings = self.charembedding_layer(input) # (max_sentense_lenth, batch_size, max_word_length, char_embedding_size
+        cnn = CNN(self.char_embedding_size, self.embed_size)
+        cnn.to(device)
+        conv_out_for_high_way = cnn(char_embeddings)
+        highway = Highway(self.embed_size)
+        highway.to(device)
+        highway_out = highway(conv_out_for_high_way)
+        word_embedding = self.dropout_layer(highway_out)
+        return word_embedding
 
         ### END YOUR CODE
 
