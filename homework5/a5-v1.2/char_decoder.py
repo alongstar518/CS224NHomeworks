@@ -28,8 +28,11 @@ class CharDecoder(nn.Module):
         ###       - Set the padding_idx argument of the embedding matrix.
         ###       - Create a new Embedding layer. Do not reuse embeddings created in Part 1 of this assignment.
         super(CharDecoder, self).__init__()
-        self.charDecoder = nn.LSTM(input_size=char_embedding_size, hidden_size=hidden_size, num_layers=2, bias=False, bidirectional=False)
-        self.char_output_projection = nn.Linear(in_features=hidden_size, out_features= len(target_vocab.char2id), bias=True)
+        self.target_vocab = target_vocab
+        self.hidden_size = hidden_size
+        self.vocab_size = len(target_vocab.char2id)
+        self.charDecoder = nn.LSTM(input_size=char_embedding_size, hidden_size=hidden_size, num_layers=4, bias=False, bidirectional=False)
+        self.char_output_projection = nn.Linear(in_features=hidden_size, out_features= self.vocab_size, bias=True)
         self.decoderCharEmb = nn.Embedding(len(target_vocab.char2id), char_embedding_size)
         self.target_vocab = target_vocab
 
@@ -48,12 +51,21 @@ class CharDecoder(nn.Module):
         """
         ### YOUR CODE HERE for part 2b
         ### TODO - Implement the forward pass of the character decoder.
-        X = self.decoderCharEmb(input)
-        dec_out, (last_hidden, last_cell) = self.charDecoder(X, dec_hidden)
 
-        s_t = self.char_output_projection(last_hidden)
-
-        return s_t, (last_hidden, last_cell)
+        Y = self.decoderCharEmb(input)
+        _scores = []
+        currnet_dec_hidden = dec_hidden
+        _hidden = []
+        _cell = []
+        for Y_t in torch.split(Y, 1, dim=1):
+            outputs, currnet_dec_hidden = self.charDecoder(Y_t, currnet_dec_hidden)
+            score = self.char_output_projection(currnet_dec_hidden[0])
+            _scores.append(torch.squeeze(score))
+            _hidden.append(currnet_dec_hidden[-1][0])
+            _cell.append(currnet_dec_hidden[-1][1])
+        scores = torch.stack(_scores, dim=1)
+        dec_hidden = (torch.stack(_hidden, dim=1), torch.stack(_cell, dim=1))
+        return scores, dec_hidden
 
         
         ### END YOUR CODE 
@@ -72,7 +84,15 @@ class CharDecoder(nn.Module):
         ###
         ### Hint: - Make sure padding characters do not contribute to the cross-entropy loss.
         ###       - char_sequence corresponds to the sequence x_1 ... x_{n+1} from the handout (e.g., <START>,m,u,s,i,c,<END>).
-
+        char_sequence_input = char_sequence[1:]
+        char_sequence_y = char_sequence[:-1]
+        y = torch.zeros(char_sequence_y.size(0), char_sequence_y.size(1),self.vocab_size, device = char_sequence.device, dtype=torch.long)
+        y.scatter_(2,y, 1)
+        scores, dec_stat = self.forward(char_sequence_input,dec_hidden)
+        ce_loss_layer = nn.CrossEntropyLoss()
+        loss = ce_loss_layer(scores, y)
+        loss = torch.sum(loss)
+        return loss
 
         ### END YOUR CODE
 
