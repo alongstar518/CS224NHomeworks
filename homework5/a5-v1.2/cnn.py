@@ -48,7 +48,7 @@ class CNN(nn.Module):
         #print("OUT is %s" % forward_out)
         return forward_out.transpose(0,1)
         '''
-        input = input.transpose(2, 3)
+        input = input.permute(0,1,3,2)
         batch_size = input.size(1)
         input = input.view(-1, input.size(2), input.size(3))
         conv = self.cov1d_layer(input)
