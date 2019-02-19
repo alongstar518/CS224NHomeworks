@@ -98,8 +98,7 @@ class CharDecoder(nn.Module):
             ce_loss = ce_loss_layer(score, char_sequence[i])
             loss += ce_loss
         '''
-        scores.data.masked_fill_(masks_tensor.byte(), -float('inf'))
-        char_sequence.data.masked_fill_(masks_tensor.byte(), -float('inf'))
+        scores.data.masked_fill_(masks_tensor.byte(), 0)
         scores = scores.permute(1,2,0)
         char_sequence = char_sequence.t()
         ce = nn.CrossEntropyLoss()
