@@ -65,12 +65,14 @@ class ModelEmbeddings(nn.Module):
         ### YOUR CODE HERE for part 1j
 
         device = input.device
-        char_embeddings = self.charembedding_layer(input) # (max_sentense_lenth, batch_size, max_word_length, char_embedding_size)
-        char_embeddings = char_embeddings.permute(0,1,3,2)
+        #char_embeddings = self.charembedding_layer(input) # (max_sentense_lenth, batch_size, max_word_length, char_embedding_size)
+        #char_embeddings = char_embeddings.permute(0,1,3,2)
         word_embedding = []
-        for emb in char_embeddings:
+        for emb in input:
+            emb = self.charembedding_layer(emb)
             cnn = CNN(self.char_embedding_size, self.embed_size)
             cnn.to(device)
+            emb = emb.permute(0,2,1)
             conv_out_for_high_way = cnn(emb)
             highway = Highway(self.embed_size)
             highway.to(device)

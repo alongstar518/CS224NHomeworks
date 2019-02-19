@@ -89,6 +89,7 @@ class CharDecoder(nn.Module):
             _mask[torch.arange(0, _mask.size(0)).long(), 0] = 1
             masks.append(_mask)
         masks_tensor = torch.stack(masks)
+
         scores.data.masked_fill_(masks_tensor.byte(), 0)
         scores = scores.permute(1,2,0)
         char_sequence = char_sequence.t()
