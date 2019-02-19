@@ -30,8 +30,8 @@ class CNN(nn.Module):
     def forward(self, input):
         """
 
-        :param input: (max_sentense_lenth, max_word_length, char_embedding_size)
-        :return: word embedding vectors for sentense. (max_sentense_length, word_embedding_size, max_word_length)
+        :param input: (Batch_size, char_embedding_size, max_word_length)
+        :return: word embedding vectors for sentense. (Batch_size, word_embedding_size)
         """
         conv = self.cov1d_layer(input)
         relu = F.relu(conv)

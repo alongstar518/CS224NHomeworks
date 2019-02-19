@@ -23,6 +23,7 @@ class Highway(nn.Module):
         super(Highway, self).__init__()
         self.word_embedding_size = word_embedding_size
 
+
         #Define Layers
         self.proj_layer = nn.Linear(in_features=self.word_embedding_size, out_features=self.word_embedding_size, bias=True)
         self.gate_layer = nn.Linear(in_features=self.word_embedding_size, out_features=self.word_embedding_size, bias=True)
@@ -30,8 +31,8 @@ class Highway(nn.Module):
     def forward(self, input):
         """
 
-        :param input: shape of (max_sentence_length,embedding size)
-        :return: shape of (max_sentence_length,embedding size)
+        :param input: shape of (batch_size,embedding size)
+        :return: shape of (batch_size,embedding size)
         """
         proj_val = self.proj_layer(input)
         proj = F.relu(proj_val)

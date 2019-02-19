@@ -53,18 +53,10 @@ class CharDecoder(nn.Module):
         ### TODO - Implement the forward pass of the character decoder.
 
         Y = self.decoderCharEmb(input)
-        _scores = []
         currnet_dec_hidden = dec_hidden
-        _hidden = []
-        _cell = []
-        for Y_t in torch.split(Y, 1, dim=1):
-            outputs, currnet_dec_hidden = self.charDecoder(Y_t, currnet_dec_hidden)
-            score = self.char_output_projection(currnet_dec_hidden[0])
-            _scores.append(torch.squeeze(score))
-            _hidden.append(currnet_dec_hidden[-1][0])
-            _cell.append(currnet_dec_hidden[-1][1])
-        scores = torch.stack(_scores, dim=1)
-        dec_hidden = (torch.stack(_hidden, dim=1), torch.stack(_cell, dim=1))
+        outputs, currnet_dec_hidden = self.charDecoder(Y, currnet_dec_hidden)
+        scores = self.char_output_projection(currnet_dec_hidden[0])
+        dec_hidden = (torch.unsqueeze(currnet_dec_hidden[0][-1],0), torch.unsqueeze(currnet_dec_hidden[1][-1],0))
         return scores, dec_hidden
 
         
@@ -84,14 +76,19 @@ class CharDecoder(nn.Module):
         ###
         ### Hint: - Make sure padding characters do not contribute to the cross-entropy loss.
         ###       - char_sequence corresponds to the sequence x_1 ... x_{n+1} from the handout (e.g., <START>,m,u,s,i,c,<END>).
-        char_sequence_input = char_sequence[:-1]
-        char_sequence_y = char_sequence[1:-1]
-        y = torch.zeros(char_sequence_y.size(0), char_sequence_y.size(1),self.vocab_size, device = char_sequence.device, dtype=torch.long)
-        y.scatter_(2,char_sequence_y, 1)
-        scores, dec_stat = self.forward(char_sequence_input,dec_hidden)
-        ce_loss_layer = nn.CrossEntropyLoss()
-        loss = ce_loss_layer(scores[1:], y)
-        loss = torch.sum(loss)
+
+        scores, _ = self.forward(char_sequence[:-1], dec_hidden)
+        y = []
+        for char_seq in torch.split(char_sequence[1:-1], 1, dim=0):
+            _y = torch.zeros((char_sequence.size(1), self.vocab_size), dtype = torch.long, device = char_sequence.device)
+            _y.scatter_(1, char_seq.transpose(0,1), 1)
+            y.append(_y)
+        loss = 0
+        for i, score in enumerate(scores[1:]):
+            score = torch.squeeze(score)
+            ce_loss_layer = nn.CrossEntropyLoss()
+            ce_loss = ce_loss_layer(score, y[i])
+            loss += ce_loss
         return loss
 
         ### END YOUR CODE
