@@ -89,15 +89,6 @@ class CharDecoder(nn.Module):
             _mask[torch.arange(0, _mask.size(0)).long(), 0] = 1
             masks.append(_mask)
         masks_tensor = torch.stack(masks)
-        '''
-        loss = None
-        for i, score in enumerate(scores):
-            score = torch.squeeze(score)
-            scores.data.masked_fill_(masks[i].byte(), -float('inf'))
-            ce_loss_layer = nn.CrossEntropyLoss()
-            ce_loss = ce_loss_layer(score, char_sequence[i])
-            loss += ce_loss
-        '''
         scores.data.masked_fill_(masks_tensor.byte(), 0)
         scores = scores.permute(1,2,0)
         char_sequence = char_sequence.t()
@@ -125,7 +116,12 @@ class CharDecoder(nn.Module):
         ###      - Use torch.tensor(..., device=device) to turn a list of character indices into a tensor.
         ###      - We use curly brackets as start-of-word and end-of-word characters. That is, use the character '{' for <START> and '}' for <END>.
         ###        Their indices are self.target_vocab.start_of_word and self.target_vocab.end_of_word, respectively.
-        
+
+        decodedWords = []
+
+        for t in range(max_length):
+            current_char = None
+
         
         ### END YOUR CODE
 

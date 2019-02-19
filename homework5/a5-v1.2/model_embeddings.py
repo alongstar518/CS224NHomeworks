@@ -69,7 +69,6 @@ class ModelEmbeddings(nn.Module):
         char_embeddings = char_embeddings.permute(0,1,3,2)
         word_embedding = []
         for emb in char_embeddings:
-            emb = torch.squeeze(emb, dim=0)
             cnn = CNN(self.char_embedding_size, self.embed_size)
             cnn.to(device)
             conv_out_for_high_way = cnn(emb)
