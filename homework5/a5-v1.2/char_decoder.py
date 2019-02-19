@@ -54,7 +54,9 @@ class CharDecoder(nn.Module):
         Y = self.decoderCharEmb(input)
         currnet_dec_hidden = dec_hidden
         outputs, currnet_dec_hidden = self.charDecoder(Y, currnet_dec_hidden)
-        scores = self.char_output_projection(currnet_dec_hidden[0])
+        h_t = currnet_dec_hidden[0].permute(1,0,2)
+        scores = self.char_output_projection(h_t)
+        scores = scores.permute(1,0,2)
         dec_hidden = (torch.unsqueeze(currnet_dec_hidden[0][-1],0), torch.unsqueeze(currnet_dec_hidden[1][-1],0))
         return scores, dec_hidden
 
@@ -77,28 +79,28 @@ class CharDecoder(nn.Module):
         ###       - char_sequence corresponds to the sequence x_1 ... x_{n+1} from the handout (e.g., <START>,m,u,s,i,c,<END>).
 
         scores, _ = self.forward(char_sequence, dec_hidden)
-        y = []
+        masks = []
         for char_seq in torch.split(char_sequence, 1, dim=0):
             _y = torch.zeros((char_sequence.size(1), self.vocab_size), dtype = torch.long, device = char_sequence.device)
             _y.scatter_(1, char_seq.transpose(0,1), 1)
-            y.append(_y)
-
-
-        #mask = (char_sequence == self.target_vocab.char2id['<pad>']).float()
-
-        #scores.data.masked_fill_(mask.byte(), -float('inf'))
-
-        loss = 0
+            _mask = (_y == self.target_vocab.char2id['<pad>']).float()
+            _mask[torch.arange(0, _mask.size(0)).long(), 0] = 1
+            masks.append(_mask)
+        masks_tensor = torch.stack(masks)
+        '''
+        loss = None
         for i, score in enumerate(scores):
             score = torch.squeeze(score)
-            mask = (y[i] == self.target_vocab.char2id['<pad>']).float()
-            mask[torch.arange(0, y[i].size(0)).long(), 0] = 1
-            scores.data.masked_fill_(mask.byte(), -float('inf'))
+            scores.data.masked_fill_(masks[i].byte(), -float('inf'))
             ce_loss_layer = nn.CrossEntropyLoss()
-            ce_loss = ce_loss_layer(score, y[i])
+            ce_loss = ce_loss_layer(score, char_sequence[i])
             loss += ce_loss
+        '''
+        scores.data.masked_fill_(masks_tensor.byte(), -float('inf'))
+        ce = nn.CrossEntropyLoss()
+        loss = ce(scores, char_sequence)
 
-        return loss
+        return sum(loss)
 
         ### END YOUR CODE
 
