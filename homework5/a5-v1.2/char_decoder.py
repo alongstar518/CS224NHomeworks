@@ -31,7 +31,7 @@ class CharDecoder(nn.Module):
         self.target_vocab = target_vocab
         self.hidden_size = hidden_size
         self.vocab_size = len(target_vocab.char2id)
-        self.charDecoder = nn.LSTM(input_size=char_embedding_size, hidden_size=hidden_size, num_layers=4, bias=False, bidirectional=False)
+        self.charDecoder = nn.LSTM(input_size=char_embedding_size, hidden_size=hidden_size, num_layers=1, bias=False, bidirectional=False)
         self.char_output_projection = nn.Linear(in_features=hidden_size, out_features= self.vocab_size, bias=True)
         self.decoderCharEmb = nn.Embedding(len(target_vocab.char2id), char_embedding_size)
 
@@ -52,12 +52,14 @@ class CharDecoder(nn.Module):
         ### TODO - Implement the forward pass of the character decoder.
 
         Y = self.decoderCharEmb(input)
-        currnet_dec_hidden = dec_hidden
-        outputs, currnet_dec_hidden = self.charDecoder(Y, currnet_dec_hidden)
-        h_t = currnet_dec_hidden[0].permute(1,0,2)
-        scores = self.char_output_projection(h_t)
-        scores = scores.permute(1,0,2)
-        dec_hidden = (torch.unsqueeze(currnet_dec_hidden[0][-1],0), torch.unsqueeze(currnet_dec_hidden[1][-1],0))
+        _scores = []
+        for Y_t in torch.split(Y, 1, dim=0):
+            outputs, dec_hidden = self.charDecoder(Y_t, dec_hidden)
+            h_t = dec_hidden[0].permute(1,0,2)
+            score = self.char_output_projection(h_t)
+            score = torch.squeeze(score, dim=1)
+            _scores.append(score)
+        scores = torch.stack(_scores)
         return scores, dec_hidden
 
         
@@ -97,10 +99,13 @@ class CharDecoder(nn.Module):
             loss += ce_loss
         '''
         scores.data.masked_fill_(masks_tensor.byte(), -float('inf'))
+        char_sequence.data.masked_fill_(masks_tensor.byte(), -float('inf'))
+        scores = scores.permute(1,2,0)
+        char_sequence = char_sequence.t()
         ce = nn.CrossEntropyLoss()
         loss = ce(scores, char_sequence)
 
-        return sum(loss)
+        return loss
 
         ### END YOUR CODE
 
