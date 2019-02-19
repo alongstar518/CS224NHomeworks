@@ -34,7 +34,7 @@ class CharDecoder(nn.Module):
         self.charDecoder = nn.LSTM(input_size=char_embedding_size, hidden_size=hidden_size, num_layers=1, bias=False, bidirectional=False)
         self.char_output_projection = nn.Linear(in_features=hidden_size, out_features= self.vocab_size, bias=True)
         self.decoderCharEmb = nn.Embedding(len(target_vocab.char2id), char_embedding_size)
-
+        self.softmax = nn.Softmax()
         ### END YOUR CODE
 
 
@@ -118,9 +118,28 @@ class CharDecoder(nn.Module):
         ###        Their indices are self.target_vocab.start_of_word and self.target_vocab.end_of_word, respectively.
 
         decodedWords = []
-
+        batch_size = initialStates[0].size(1)
+        current_chars = torch.tensor([[self.target_vocab.start_of_word]]*batch_size, device=device).t()
+        states = initialStates
         for t in range(max_length):
-            current_char = None
+            s_t1 , states = self.forward(current_chars, states)
+            p_t1 = self.softmax(s_t1)
+            _, max_indxs = torch.max(p_t1, dim=2)
+            decodedWords.append(max_indxs)
+            current_chars = max_indxs
+
+        decodedWords = torch.stack(decodedWords)
+        decodedWords = decodedWords.view(batch_size, -1)
+        decodedWords = decodedWords.tolist()
+        output = []
+        for dw in decodedWords:
+            dw = map(lambda x: self.target_vocab.id2char[x],dw)
+            output.append(''.join(dw).replace('<pad>', '').replace('{', '').replace('}', ''))
+
+        return output
+
+
+
 
         
         ### END YOUR CODE
