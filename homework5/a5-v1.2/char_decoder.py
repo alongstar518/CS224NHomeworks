@@ -34,7 +34,6 @@ class CharDecoder(nn.Module):
         self.charDecoder = nn.LSTM(input_size=char_embedding_size, hidden_size=hidden_size, num_layers=4, bias=False, bidirectional=False)
         self.char_output_projection = nn.Linear(in_features=hidden_size, out_features= self.vocab_size, bias=True)
         self.decoderCharEmb = nn.Embedding(len(target_vocab.char2id), char_embedding_size)
-        self.target_vocab = target_vocab
 
         ### END YOUR CODE
 
@@ -77,18 +76,28 @@ class CharDecoder(nn.Module):
         ### Hint: - Make sure padding characters do not contribute to the cross-entropy loss.
         ###       - char_sequence corresponds to the sequence x_1 ... x_{n+1} from the handout (e.g., <START>,m,u,s,i,c,<END>).
 
-        scores, _ = self.forward(char_sequence[:-1], dec_hidden)
+        scores, _ = self.forward(char_sequence, dec_hidden)
         y = []
-        for char_seq in torch.split(char_sequence[1:-1], 1, dim=0):
+        for char_seq in torch.split(char_sequence, 1, dim=0):
             _y = torch.zeros((char_sequence.size(1), self.vocab_size), dtype = torch.long, device = char_sequence.device)
             _y.scatter_(1, char_seq.transpose(0,1), 1)
             y.append(_y)
+
+
+        #mask = (char_sequence == self.target_vocab.char2id['<pad>']).float()
+
+        #scores.data.masked_fill_(mask.byte(), -float('inf'))
+
         loss = 0
-        for i, score in enumerate(scores[1:]):
+        for i, score in enumerate(scores):
             score = torch.squeeze(score)
+            mask = (y[i] == self.target_vocab.char2id['<pad>']).float()
+            mask[torch.arange(0, y[i].size(0)).long(), 0] = 1
+            scores.data.masked_fill_(mask.byte(), -float('inf'))
             ce_loss_layer = nn.CrossEntropyLoss()
             ce_loss = ce_loss_layer(score, y[i])
             loss += ce_loss
+
         return loss
 
         ### END YOUR CODE

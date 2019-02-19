@@ -63,12 +63,12 @@ class ModelEmbeddings(nn.Module):
         ## End A4 code
 
         ### YOUR CODE HERE for part 1j
-        '''
+
         device = input.device
         char_embeddings = self.charembedding_layer(input) # (max_sentense_lenth, batch_size, max_word_length, char_embedding_size)
         char_embeddings = char_embeddings.permute(0,1,3,2)
         word_embedding = []
-        for emb in torch.split(char_embeddings, 1, dim=0):
+        for emb in char_embeddings:
             emb = torch.squeeze(emb, dim=0)
             cnn = CNN(self.char_embedding_size, self.embed_size)
             cnn.to(device)
@@ -80,8 +80,5 @@ class ModelEmbeddings(nn.Module):
             word_embedding.append(embedding)
         word_embedding = torch.stack(word_embedding)
         return word_embedding
-        '''
-
-        
         ### END YOUR CODE
 
