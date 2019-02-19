@@ -45,15 +45,9 @@ def pad_sents_char(sents, char_pad_token):
     for s in sents:
         new_s = []
         for w in s:
-            starting_token = w[0]
             end_token = w[-1]
-            w = w[1:-1]
-            if w:
-                chunks = [([starting_token] + w[k:k + max_word_length-2] + [end_token]) for k in range(0, len(w), max_word_length - 2)]
-            else:
-                chunks = [[starting_token,end_token]]
-            chunks[-1] = chunks[-1] + [char_pad_token] * (max_word_length - len(chunks[-1]))
-            new_s += map(lambda x: x, chunks)
+            w = w[0:min(len(w)-1, max_word_length-1)]
+            new_s.append(w + [end_token] + [char_pad_token] * (max_word_length - len(w) -1))
         sents_padded.append(new_s)
     max_sent_length = max(len(s) for s in sents_padded)
     sents_padded = [(s + [[char_pad_token] * max_word_length] * (max_sent_length - len(s))) for s in sents_padded]

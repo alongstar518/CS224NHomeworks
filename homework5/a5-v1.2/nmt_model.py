@@ -97,7 +97,6 @@ class NMT(nn.Module):
         ###     - Modify calls to encode() and decode() to use the character level encodings
         source_padded_chars = self.vocab.src.to_input_tensor_char(source, device=self.device)# tensor of (max_sentence_length, batch_size, max_word_length)
         target_padded_chars = self.vocab.tgt.to_input_tensor_char(target, device=self.device) # tensor of (max_sentence_length, batch_size, max_word_length)
-        target[0] = target[0] + ['<pad>'] * (target_padded_chars.size(0) - len(target[0]))
         target_padded = self.vocab.tgt.to_input_tensor(target, device=self.device)  # Tensor: (tgt_len, b)
 
         enc_hiddens, dec_init_state = self.encode(source_padded_chars, source_lengths)
