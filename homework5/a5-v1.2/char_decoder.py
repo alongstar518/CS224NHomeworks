@@ -35,7 +35,7 @@ class CharDecoder(nn.Module):
         self.char_output_projection = nn.Linear(in_features=hidden_size, out_features= self.vocab_size, bias=True)
         self.decoderCharEmb = nn.Embedding(len(target_vocab.char2id), char_embedding_size)
         self.softmax = nn.Softmax()
-        self.ce = nn.CrossEntropyLoss(reduction='sum', ignore_index=0)
+        self.ce = nn.CrossEntropyLoss(reduction='sum', ignore_index=self.target_vocab.char2id['<pad>'])
         ### END YOUR CODE
 
 
@@ -84,36 +84,6 @@ class CharDecoder(nn.Module):
         ###       - char_sequence corresponds to the sequence x_1 ... x_{n+1} from the handout (e.g., <START>,m,u,s,i,c,<END>).
         torch.set_printoptions(profile='full')
         scores, _ = self.forward(char_sequence, dec_hidden)
-        '''
-        masks = []
-        for char_seq in torch.split(char_sequence, 1, dim=0):
-            _y = torch.zeros((char_sequence.size(1), self.vocab_size), dtype = torch.long, device = char_sequence.device)
-            _y.scatter_(1, char_seq.transpose(0,1), 1)
-            _mask = (_y == self.target_vocab.char2id['<pad>']).float()
-            _mask[torch.arange(0, _mask.size(0)).long(), 0] = 1
-            masks.append(_mask)
-        masks = torch.stack(masks)
-        
-        b = []
-        for i in range(char_sequence.size(0)):
-            m = []
-            for j in range(len(char_sequence[0])):
-                if char_sequence[i][j].data == 0:
-                    t =torch.zeros((scores.size(2)),dtype=torch.float, device = char_sequence.device)
-                    t.data[0] = 1
-                    m.append(t)
-                else:
-                    m.append(torch.ones((scores.size(2)),dtype=torch.float, device = char_sequence.device))
-            b.append(torch.stack(m, dim=0))
-
-        mask = torch.stack(b, dim=0)
-
-        mask = torch.zeros(scores.size(), dtype = torch.float, device = scores.device)
-        mask.scatter_(2, char_sequence, 1)
-        '''
-        mask = char_sequence !=0
-        mask = mask.unsqueeze(-1).expand_as(scores)
-        #trscores = scores * mask.float()
         scores = scores.permute(1,2,0)
         char_sequence = char_sequence.t()
         loss = self.ce(scores, char_sequence)
