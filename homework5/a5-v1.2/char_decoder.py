@@ -93,7 +93,7 @@ class CharDecoder(nn.Module):
             _mask[torch.arange(0, _mask.size(0)).long(), 0] = 1
             masks.append(_mask)
         masks = torch.stack(masks)
-        '''
+        
         b = []
         for i in range(char_sequence.size(0)):
             m = []
@@ -109,11 +109,13 @@ class CharDecoder(nn.Module):
         mask = torch.stack(b, dim=0)
 
 
-        '''
-        mask = torch.zeros(scores.size())
+        
+        mask = torch.zeros(scores.size(), dtype = torch.float, device = scores.device)
         mask.scatter_(2, char_sequence, 1)
         '''
-        scores = scores * mask
+        mask = char_sequence !=0
+        mask = mask.unsqueeze(-1).expand_as(scores)
+        scores = scores * mask.float()
         scores = scores.permute(1,2,0)
         char_sequence = char_sequence.t()
         loss = self.ce(scores, char_sequence)
