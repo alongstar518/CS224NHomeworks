@@ -7,7 +7,6 @@ CS224N 2018-19: Homework 5
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-
 ### YOUR CODE HERE for part 1h
 class Highway(nn.Module):
     """
@@ -23,7 +22,6 @@ class Highway(nn.Module):
         super(Highway, self).__init__()
         self.word_embedding_size = word_embedding_size
 
-
         #Define Layers
         self.proj_layer = nn.Linear(in_features=self.word_embedding_size, out_features=self.word_embedding_size, bias=True)
         self.gate_layer = nn.Linear(in_features=self.word_embedding_size, out_features=self.word_embedding_size, bias=True)
@@ -31,16 +29,17 @@ class Highway(nn.Module):
     def forward(self, input):
         """
 
-        :param input: shape of (batch_size,embedding size)
-        :return: shape of (batch_size,embedding size)
+        :param input: shape of (batch_size, word embedding size)
+        :return: shape of (batch_size, word embedding size)
         """
+        self.to(input.device)
         proj_val = self.proj_layer(input)
         proj = F.relu(proj_val)
 
         gate_val = self.gate_layer(input)
         gate = F.sigmoid(gate_val)
 
-        high_way = gate * proj + (1-gate) * input
+        high_way = torch.mul(gate, proj) + torch.mul(1-gate, input)
 
         return high_way
 

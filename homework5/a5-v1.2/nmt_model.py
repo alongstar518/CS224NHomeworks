@@ -34,7 +34,7 @@ class NMT(nn.Module):
 
         @param embed_size (int): Embedding size (dimensionality)
         @param hidden_size (int): Hidden Size (dimensionality)
-        @param vocab (VocabEntry): Vocabulary object containing src and tgt languages
+        @param vocab (Vocab): Vocabulary object containing src and tgt languages
                               See vocab.py for documentation.
         @param dropout_rate (float): Dropout probability, for attention
         """
@@ -80,7 +80,7 @@ class NMT(nn.Module):
 
         ## A4 code
         # source_padded = self.vocab.src.to_input_tensor(source, device=self.device)   # Tensor: (src_len, b)
-        # target_padded = self.vocab.tgt.to_input_tensor(target, device=self.device)   # Tensor: (tgt_len, b)
+        #target_padded = self.vocab.tgt.to_input_tensor(target, device=self.device)   # Tensor: (tgt_len, b)
  
         # enc_hiddens, dec_init_state = self.encode(source_padded, source_lengths)
         # enc_masks = self.generate_sent_masks(enc_hiddens, source_lengths)
@@ -98,7 +98,6 @@ class NMT(nn.Module):
         source_padded_chars = self.vocab.src.to_input_tensor_char(source, device=self.device)# tensor of (max_sentence_length, batch_size, max_word_length)
         target_padded_chars = self.vocab.tgt.to_input_tensor_char(target, device=self.device) # tensor of (max_sentence_length, batch_size, max_word_length)
         target_padded = self.vocab.tgt.to_input_tensor(target, device=self.device)  # Tensor: (tgt_len, b)
-
         enc_hiddens, dec_init_state = self.encode(source_padded_chars, source_lengths)
         enc_masks = self.generate_sent_masks(enc_hiddens, source_lengths)
         combined_outputs = self.decode(enc_hiddens, enc_masks, dec_init_state, target_padded_chars)
@@ -132,7 +131,7 @@ class NMT(nn.Module):
     def encode(self, source_padded: torch.Tensor, source_lengths: List[int]) -> Tuple[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
         """ Apply the encoder to source sentences to obtain encoder hidden states.
             Additionally, take the final states of the encoder and project them to obtain initial states for decoder.
-        @param source_padded (Tensor): Tensor of padded source sentences with shape (src_len, b), where
+        @param source_padded (Tensor): Tensor of padded source sentences with shape (src_len, b, max_word_length), where
                                         b = batch_size, src_len = maximum source sentence length. Note that 
                                        these have already been sorted in order of longest to shortest sentence.
         @param source_lengths (List[int]): List of actual lengths for each of the source sentences in the batch
@@ -163,7 +162,7 @@ class NMT(nn.Module):
         @param enc_masks (Tensor): Tensor of sentence masks (b, src_len), where
                                      b = batch size, src_len = maximum source sentence length.
         @param dec_init_state (tuple(Tensor, Tensor)): Initial state and cell for decoder
-        @param target_padded (Tensor): Gold-standard padded target sentences (tgt_len, b), where
+        @param target_padded (Tensor): Gold-standard padded target sentences (tgt_len, b, max_word_length), where
                                        tgt_len = maximum target sentence length, b = batch size. 
         @returns combined_outputs (Tensor): combined output tensor  (tgt_len, b,  h), where
                                         tgt_len = maximum target sentence length, b = batch_size,  h = hidden size

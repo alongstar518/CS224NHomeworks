@@ -9,9 +9,8 @@ Sahil Chopra <schopra8@stanford.edu>
 Anand Dhoot <anandd@stanford.edu>
 Michael Hahn <mhahn2@stanford.edu>
 """
-
-import torch.nn as nn
 import torch
+import torch.nn as nn
 # Do not change these imports; your module names should be
 #   `CNN` in the file `cnn.py`
 #   `Highway` in the file `highway.py`
@@ -44,8 +43,10 @@ class ModelEmbeddings(nn.Module):
         self.dropout_rate = 0.3
         self.char_embedding_size = 50
         pad_token_idx = vocab.char2id['<pad>']
-        self.charembedding_layer = nn.Embedding(num_embeddings=len(vocab.char2id), embedding_dim=self.char_embedding_size,padding_idx=pad_token_idx)
+        self.embedding = nn.Embedding(num_embeddings=len(vocab.char2id), embedding_dim=self.char_embedding_size, padding_idx=pad_token_idx)
         self.dropout_layer = nn.Dropout(self.dropout_rate)
+        self.cnn = CNN(self.char_embedding_size, self.embed_size)
+        self.highway = Highway(self.embed_size)
         ### END YOUR CODE
 
     def forward(self, input):
@@ -63,23 +64,16 @@ class ModelEmbeddings(nn.Module):
         ## End A4 code
 
         ### YOUR CODE HERE for part 1j
+        batch_size = input.size(1)
+        max_word_lenth = input.size(2)
+        max_sent_lenth = input.size(0)
+        input = input.contiguous().view(max_sent_lenth*batch_size, max_word_lenth)
+        char_embeddings = self.embedding(input)
+        conv_out_for_high_way = self.cnn(char_embeddings.permute(0,2,1))
+        highway_out = self.highway(conv_out_for_high_way)
+        word_emb = self.dropout_layer(highway_out)
+        word_emb = word_emb.contiguous().view(max_sent_lenth, batch_size, self.embed_size)
+        return word_emb
 
-        device = input.device
-        #char_embeddings = self.charembedding_layer(input) # (max_sentense_lenth, batch_size, max_word_length, char_embedding_size)
-        #char_embeddings = char_embeddings.permute(0,1,3,2)
-        word_embedding = []
-        for emb in input:
-            emb = self.charembedding_layer(emb)
-            cnn = CNN(self.char_embedding_size, self.embed_size)
-            cnn.to(device)
-            emb = emb.permute(0,2,1)
-            conv_out_for_high_way = cnn(emb)
-            highway = Highway(self.embed_size)
-            highway.to(device)
-            highway_out = highway(conv_out_for_high_way)
-            embedding = self.dropout_layer(highway_out)
-            word_embedding.append(embedding)
-        word_embedding = torch.stack(word_embedding)
-        return word_embedding
         ### END YOUR CODE
 

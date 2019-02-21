@@ -31,7 +31,7 @@ class CharDecoder(nn.Module):
         self.target_vocab = target_vocab
         self.hidden_size = hidden_size
         self.vocab_size = len(target_vocab.char2id)
-        self.charDecoder = nn.LSTM(input_size=char_embedding_size, hidden_size=hidden_size, num_layers=1, bias=False, bidirectional=False)
+        self.charDecoder = nn.LSTM(input_size=char_embedding_size, hidden_size=hidden_size, num_layers=1, bidirectional=False)
         self.char_output_projection = nn.Linear(in_features=hidden_size, out_features= self.vocab_size, bias=True)
         self.decoderCharEmb = nn.Embedding(len(target_vocab.char2id), char_embedding_size)
         self.softmax = nn.Softmax()
@@ -50,20 +50,22 @@ class CharDecoder(nn.Module):
         """
         ### YOUR CODE HERE for part 2b
         ### TODO - Implement the forward pass of the character decoder.
-
+        self.to(input.device)
         Y = self.decoderCharEmb(input)
+
         _scores = []
+        last_hidden = dec_hidden
         for Y_t in torch.split(Y, 1, dim=0):
-            outputs, dec_hidden = self.charDecoder(Y_t, dec_hidden)
-            h_t = dec_hidden[0].permute(1,0,2)
+            outputs, last_hidden = self.charDecoder(Y_t, last_hidden)
+            h_t = last_hidden[0].permute(1,0,2)
             score = self.char_output_projection(h_t)
             score = torch.squeeze(score, dim=1)
             _scores.append(score)
         scores = torch.stack(_scores)
-        return scores, dec_hidden
+        return scores, last_hidden
 
-        
-        ### END YOUR CODE 
+
+        ### END YOUR CODE
 
 
     def train_forward(self, char_sequence, dec_hidden=None):
@@ -95,7 +97,6 @@ class CharDecoder(nn.Module):
         char_sequence = char_sequence.t()
         ce = nn.CrossEntropyLoss()
         loss = ce(scores, char_sequence)
-
         return loss
 
         ### END YOUR CODE
@@ -142,6 +143,6 @@ class CharDecoder(nn.Module):
 
 
 
-        
+
         ### END YOUR CODE
 
