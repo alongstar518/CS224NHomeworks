@@ -35,7 +35,7 @@ class CharDecoder(nn.Module):
         self.char_output_projection = nn.Linear(in_features=hidden_size, out_features= self.vocab_size, bias=True)
         self.decoderCharEmb = nn.Embedding(len(target_vocab.char2id), char_embedding_size)
         self.softmax = nn.Softmax()
-        self.ce = nn.CrossEntropyLoss(reduction='sum')
+        self.ce = nn.CrossEntropyLoss(reduction='sum', ignore_index=0)
         ### END YOUR CODE
 
 
@@ -108,14 +108,12 @@ class CharDecoder(nn.Module):
 
         mask = torch.stack(b, dim=0)
 
-
-        
         mask = torch.zeros(scores.size(), dtype = torch.float, device = scores.device)
         mask.scatter_(2, char_sequence, 1)
         '''
         mask = char_sequence !=0
         mask = mask.unsqueeze(-1).expand_as(scores)
-        scores = scores * mask.float()
+        #trscores = scores * mask.float()
         scores = scores.permute(1,2,0)
         char_sequence = char_sequence.t()
         loss = self.ce(scores, char_sequence)
