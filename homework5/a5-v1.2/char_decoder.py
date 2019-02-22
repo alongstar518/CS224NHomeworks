@@ -114,14 +114,14 @@ class CharDecoder(nn.Module):
         decodedWords = []
         batch_size = initialStates[0].size(1)
         start_char = [[self.target_vocab.start_of_word]] * batch_size
-        current_chars = torch.tensor(start_char, dtype = torch.long, device=device)
+        current_chars = torch.tensor(start_char, dtype = torch.long, device=device).t()
         last_states = initialStates
         for t in range(max_length):
             s_t1 , new_states = self.forward(current_chars, last_states)
             p_t1 = F.softmax(s_t1, dim=2)
             _, max_indxs = torch.max(p_t1, dim=2)
             decodedWords.append(max_indxs)
-            current_chars = max_indxs
+            current_chars = max_indxs.t()
             last_states = new_states
 
         decodedWords = torch.stack(decodedWords)
