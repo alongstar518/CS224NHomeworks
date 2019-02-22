@@ -55,16 +55,17 @@ class CharDecoder(nn.Module):
         self.to(input.device)
         Y = self.decoderCharEmb(input)
 
-        h_t = []
+        scores = []
         last_hidden = dec_hidden
         for Y_t in torch.split(Y, 1, dim=0):
-            _, new_hideden = self.charDecoder(Y_t, last_hidden)
-            h_t.append(torch.squeeze(new_hideden[0], dim=0))
+            outputs, new_hideden = self.charDecoder(Y_t, last_hidden)
+            h_t = new_hideden[0]
+            score = self.char_output_projection(h_t)
+            score = torch.squeeze(score, dim=0)
+            scores.append(score)
             last_hidden = new_hideden
 
-        h_t = torch.stack(h_t, dim=0)
-
-        scores = self.char_output_projection(h_t.permute(1,0,2))
+        scores = torch.stack(scores, dim = 0)
 
         return scores, last_hidden
 
@@ -115,7 +116,8 @@ class CharDecoder(nn.Module):
 
         decodedWords = []
         batch_size = initialStates[0].size(1)
-        current_chars = torch.tensor([[self.target_vocab.start_of_word]]*batch_size, device=device).t()
+        word = [self.target_vocab.start_of_word]
+
         last_states = initialStates
         for t in range(max_length):
             s_t1 , new_states = self.forward(current_chars, last_states)
