@@ -82,7 +82,7 @@ class CharDecoder(nn.Module):
         output_char_sequence = char_sequence[1:]
         hidden = dec_hidden
         scores = []
-        for input in torch.split(input_char_sequence, 1):
+        for input in torch.split(input_char_sequence, 1, dim=0):
             score, hidden = self.forward(input, hidden)
             scores.append(score.permute(1,0,2))
         scores = torch.stack(scores, dim = 0)
@@ -113,7 +113,7 @@ class CharDecoder(nn.Module):
 
         decodedWords = []
         batch_size = initialStates[0].size(1)
-        start_char = [self.target_vocab.start_of_word] * batch_size
+        start_char = [[self.target_vocab.start_of_word]] * batch_size
         current_chars = torch.tensor(start_char, dtype = torch.long, device=device)
         last_states = initialStates
         for t in range(max_length):
