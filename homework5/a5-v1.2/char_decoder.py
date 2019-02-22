@@ -35,7 +35,7 @@ class CharDecoder(nn.Module):
         self.charDecoder = nn.LSTM(input_size=char_embedding_size, hidden_size=hidden_size, num_layers=1, bidirectional=False)
         self.char_output_projection = nn.Linear(in_features=hidden_size, out_features= self.vocab_size, bias=True)
         self.padding_index = self.target_vocab.char2id['<pad>']
-        self.decoderCharEmb = nn.Embedding(len(target_vocab.char2id), char_embedding_size, padding_idx=self.padding_index)
+        self.decoderCharEmb = nn.Embedding(num_embeddings=len(target_vocab.char2id), embedding_dim=char_embedding_size, padding_idx=self.padding_index)
         self.ce = nn.CrossEntropyLoss(reduction='sum', ignore_index=self.padding_index)
         ### END YOUR CODE
 
@@ -55,19 +55,11 @@ class CharDecoder(nn.Module):
         self.to(input.device)
         Y = self.decoderCharEmb(input)
 
-        scores = []
-        last_hidden = dec_hidden
-        for Y_t in torch.split(Y, 1, dim=0):
-            outputs, new_hideden = self.charDecoder(Y_t, last_hidden)
-            h_t = new_hideden[0]
-            score = self.char_output_projection(h_t)
-            score = torch.squeeze(score, dim=0)
-            scores.append(score)
-            last_hidden = new_hideden
+        _, new_hideden = self.charDecoder(Y, dec_hidden)
+        h_t = new_hideden[0].permute(1,0,2)
+        score = self.char_output_projection(h_t)
 
-        scores = torch.stack(scores, dim = 0)
-
-        return scores, last_hidden
+        return score, new_hideden
 
 
         ### END YOUR CODE
@@ -88,10 +80,15 @@ class CharDecoder(nn.Module):
         ###       - char_sequence corresponds to the sequence x_1 ... x_{n+1} from the handout (e.g., <START>,m,u,s,i,c,<END>).
         input_char_sequence = char_sequence[:-1]
         output_char_sequence = char_sequence[1:]
-        scores, _ = self.forward(input_char_sequence, dec_hidden)
-        scores = scores.permute(0,2,1)
+        hidden = dec_hidden
+        scores = []
+        for input in torch.split(input_char_sequence, 1):
+            score, hidden = self.forward(input, hidden)
+            scores.append(score.permute(1,0,2))
+        scores = torch.stack(scores, dim = 0)
+        scores = scores.view(-1, scores.size(2),scores.size(3))
         output_char_sequence = output_char_sequence.t()
-        loss = self.ce(scores, output_char_sequence)
+        loss = self.ce(scores.permute(1,2,0), output_char_sequence)
         return loss
 
         ### END YOUR CODE
@@ -116,8 +113,8 @@ class CharDecoder(nn.Module):
 
         decodedWords = []
         batch_size = initialStates[0].size(1)
-        word = [self.target_vocab.start_of_word]
-
+        start_char = [self.target_vocab.start_of_word] * batch_size
+        current_chars = torch.tensor(start_char, dtype = torch.long, device=device)
         last_states = initialStates
         for t in range(max_length):
             s_t1 , new_states = self.forward(current_chars, last_states)
