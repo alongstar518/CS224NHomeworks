@@ -116,6 +116,7 @@ class CharDecoder(nn.Module):
         start_char = [[self.target_vocab.start_of_word]] * batch_size
         current_chars = torch.tensor(start_char, dtype = torch.long, device=device).t()
         last_states = initialStates
+        #decodedWords = None
         for t in range(max_length):
             s_t1 , new_states = self.forward(current_chars, last_states)
             p_t1 = F.softmax(s_t1, dim=2)
@@ -124,13 +125,19 @@ class CharDecoder(nn.Module):
             current_chars = max_indxs.t()
             last_states = new_states
 
-        decodedWords = torch.stack(decodedWords)
+        decodedWords = torch.stack(decodedWords,dim = 1)
         decodedWords = decodedWords.view(batch_size, -1)
         decodedWords = decodedWords.tolist()
         output = []
         for dw in decodedWords:
-            dw = map(lambda x: self.target_vocab.id2char[x],dw)
-            output.append(''.join(dw).replace('<pad>', '').replace('{', '').replace('}', ''))
+            word = ''
+            for d in dw:
+                w = self.target_vocab.id2char[d]
+                if w == '}':
+                    break
+                if w != '<pad>':
+                    word += w
+            output.append(word)
 
         return output
 
