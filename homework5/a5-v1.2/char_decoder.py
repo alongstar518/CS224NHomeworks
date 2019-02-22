@@ -7,6 +7,7 @@ CS224N 2018-19: Homework 5
 
 import torch
 import torch.nn as nn
+import torch.nn.functional as F
 
 class CharDecoder(nn.Module):
     def __init__(self, hidden_size, char_embedding_size=50, target_vocab=None):
@@ -35,7 +36,6 @@ class CharDecoder(nn.Module):
         self.char_output_projection = nn.Linear(in_features=hidden_size, out_features= self.vocab_size, bias=True)
         self.padding_index = self.target_vocab.char2id['<pad>']
         self.decoderCharEmb = nn.Embedding(len(target_vocab.char2id), char_embedding_size, padding_idx=self.padding_index)
-        self.softmax = nn.Softmax()
         self.ce = nn.CrossEntropyLoss(reduction='sum', ignore_index=self.padding_index)
         ### END YOUR CODE
 
@@ -52,20 +52,20 @@ class CharDecoder(nn.Module):
         """
         ### YOUR CODE HERE for part 2b
         ### TODO - Implement the forward pass of the character decoder.
-        torch.set_printoptions(profile='full')
         self.to(input.device)
         Y = self.decoderCharEmb(input)
 
-        _scores = []
+        h_t = []
         last_hidden = dec_hidden
         for Y_t in torch.split(Y, 1, dim=0):
-            outputs, new_hideden = self.charDecoder(Y_t, last_hidden)
-            h_t = new_hideden[0].permute(1,0,2)
-            score = self.char_output_projection(h_t)
-            score = torch.squeeze(score, dim=1)
-            _scores.append(score)
+            _, new_hideden = self.charDecoder(Y_t, last_hidden)
+            h_t.append(torch.squeeze(new_hideden[0], dim=0))
             last_hidden = new_hideden
-        scores = torch.stack(_scores)
+
+        h_t = torch.stack(h_t, dim=0)
+
+        scores = self.char_output_projection(h_t.permute(1,0,2))
+
         return scores, last_hidden
 
 
@@ -85,11 +85,10 @@ class CharDecoder(nn.Module):
         ###
         ### Hint: - Make sure padding characters do not contribute to the cross-entropy loss.
         ###       - char_sequence corresponds to the sequence x_1 ... x_{n+1} from the handout (e.g., <START>,m,u,s,i,c,<END>).
-        torch.set_printoptions(profile='full')
         input_char_sequence = char_sequence[:-1]
         output_char_sequence = char_sequence[1:]
         scores, _ = self.forward(input_char_sequence, dec_hidden)
-        scores = scores.permute(1,2,0)
+        scores = scores.permute(0,2,1)
         output_char_sequence = output_char_sequence.t()
         loss = self.ce(scores, output_char_sequence)
         return loss
@@ -120,7 +119,7 @@ class CharDecoder(nn.Module):
         last_states = initialStates
         for t in range(max_length):
             s_t1 , new_states = self.forward(current_chars, last_states)
-            p_t1 = self.softmax(s_t1)
+            p_t1 = F.softmax(s_t1, dim=2)
             _, max_indxs = torch.max(p_t1, dim=2)
             decodedWords.append(max_indxs)
             current_chars = max_indxs
